@@ -12,7 +12,7 @@ interface car{
 }
 public class test {
     public static void main(String[] args) {
-        Queue<String> queue = new LinkedList<>();
+        /*Queue<String> queue = new LinkedList<>();
         queue.add("a");
         queue.add("b");
         queue.add("d");
@@ -24,8 +24,11 @@ public class test {
         queue.remove();
         queue.remove();
         queue.stream().forEach(System.out::println);
-
+*/
 //        Consumer a= (l)-> System.out.println();
 //        car c = ()-> System.out.println("car");
+        String s = new String("test");
+        s+=("\n\naa");
+        System.out.println(s);
     }
 }

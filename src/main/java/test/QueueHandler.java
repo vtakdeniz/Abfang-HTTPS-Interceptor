@@ -34,8 +34,11 @@ public class QueueHandler extends Thread{
                 String s = in.nextLine();
                 if(s.equals("$")){
                     System.out.println("writing to socket");
-                    request_wrapper.targer_socket.write(request);
-                    request_wrapper.targer_socket.flush();
+                    System.out.println("socket type : "+request_wrapper.targer_socket);
+                    if(!request_wrapper.socket.isOutputShutdown()){
+                        request_wrapper.targer_socket.write(request);
+                        request_wrapper.targer_socket.flush();
+                    }
                 }
             }
         } catch (InterruptedException e) {

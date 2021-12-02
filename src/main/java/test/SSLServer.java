@@ -105,7 +105,6 @@ class SSLServer extends Thread {
         }
     }
 
-
     private static void forwardDataFromBrowser(Socket inputSocket, Socket outputSocket) {
         try {
             //InputStream inputStream = inputSocket.getInputStream();
@@ -118,25 +117,30 @@ class SSLServer extends Thread {
                 //OutputStream outputStream = outputSocket.getOutputStream();
                 try {
                     String line="";
+                    int temp=0;
                     do {
-                        line+=inputStream.readLine()+"\n";
-                        if(!inputStream.ready()){
+                        temp = inputStream.read();
+                        line+=(char)temp;
+                        //System.out.println("temp : "+temp);
+                        if(!inputStream.ready()&&temp!=-1){
+                            //System.out.println("line before trimming : " +line);
                             HttpRequestParser hrp= new HttpRequestParser();
+                            System.out.println("temp : "+temp);
                             hrp.parseRequest(line);
                             if(hrp.isHeaderAvailable("Accept-Encoding")){
                                 hrp.deleteHeader("Accept-Encoding");
                                 line=hrp.getRequest();
-                                //RequestQueue.browserToServer.put(new RequestWrapper(hrp,outputStream));
+                                //System.out.println("line after trimming "+line);
+                                //RequestQueue.browserToServer.put(new RequestWrapper(hrp,outputStream,outputSocket));
                                 //TODO Implement exception
 
                             }
                             outputStream.write(line);
-                            System.out.println(line);
                             outputStream.flush();
                             line="";
                         }
                     }
-                    while(line!=null);
+                    while(temp!=-1);
                     /*byte[] buffer = new byte[4096];
                     int read;
                     do {
