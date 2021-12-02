@@ -116,28 +116,28 @@ class SSLServer extends Thread {
                 BufferedWriter outputStream= new BufferedWriter(new OutputStreamWriter(outputSocket.getOutputStream()));
                 //OutputStream outputStream = outputSocket.getOutputStream();
                 try {
-                    String line="";
+                    StringBuffer line=new StringBuffer();
                     int temp=0;
                     do {
                         temp = inputStream.read();
-                        line+=(char)temp;
+                        line.append((char)temp);
                         //System.out.println("temp : "+temp);
                         if(!inputStream.ready()&&temp!=-1){
                             //System.out.println("line before trimming : " +line);
                             HttpRequestParser hrp= new HttpRequestParser();
-                            System.out.println("temp : "+temp);
-                            hrp.parseRequest(line);
+                            //System.out.println("temp : "+temp);
+                            hrp.parseRequest(line.toString());
                             if(hrp.isHeaderAvailable("Accept-Encoding")){
                                 hrp.deleteHeader("Accept-Encoding");
-                                line=hrp.getRequest();
+                                line.append(hrp.getRequest());
                                 //System.out.println("line after trimming "+line);
                                 //RequestQueue.browserToServer.put(new RequestWrapper(hrp,outputStream,outputSocket));
                                 //TODO Implement exception
 
                             }
-                            outputStream.write(line);
+                            outputStream.write(line.toString());
                             outputStream.flush();
-                            line="";
+                            line.delete(0,line.length());
                         }
                     }
                     while(temp!=-1);
