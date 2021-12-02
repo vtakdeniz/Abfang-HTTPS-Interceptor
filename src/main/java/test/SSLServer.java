@@ -6,6 +6,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.Arrays;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,56 +110,45 @@ class SSLServer extends Thread {
     }
 
     private static void forwardDataFromBrowser(Socket inputSocket, Socket outputSocket) {
+        Lock lock = new ReentrantLock();
+        lock.lock();
+        BlockingQueue local_requests = new LinkedBlockingQueue();
         try {
-            //InputStream inputStream = inputSocket.getInputStream();
 
             BufferedReader inputStream = new BufferedReader(
                     new InputStreamReader(
                             inputSocket.getInputStream()));
             try {
                 BufferedWriter outputStream= new BufferedWriter(new OutputStreamWriter(outputSocket.getOutputStream()));
-                //OutputStream outputStream = outputSocket.getOutputStream();
                 try {
                     StringBuffer line=new StringBuffer();
                     int temp=0;
                     do {
                         temp = inputStream.read();
                         line.append((char)temp);
-                        //System.out.println("temp : "+temp);
                         if(!inputStream.ready()&&temp!=-1){
-                            //System.out.println("line before trimming : " +line);
                             HttpRequestParser hrp= new HttpRequestParser();
-                            //System.out.println("temp : "+temp);
                             hrp.parseRequest(line.toString());
                             if(hrp.isHeaderAvailable("Accept-Encoding")){
                                 hrp.deleteHeader("Accept-Encoding");
                                 line.append(hrp.getRequest());
-                                //System.out.println("line after trimming "+line);
-                                //RequestQueue.browserToServer.put(new RequestWrapper(hrp,outputStream,outputSocket));
+                                var request_wrapper=new RequestWrapper(hrp,outputStream,outputSocket,lock,local_requests);
+                                local_requests.put(request_wrapper);
+                                RequestQueue.browserToServer.put(request_wrapper);
                                 //TODO Implement exception
 
                             }
-                            outputStream.write(line.toString());
-                            outputStream.flush();
+                            /*outputStream.write(line.toString());
+                            outputStream.flush();*/
                             line.delete(0,line.length());
                         }
                     }
                     while(temp!=-1);
-                    /*byte[] buffer = new byte[4096];
-                    int read;
-                    do {
-                        read = inputStream.read(buffer);
-                        if (read > 0) {
-                            outputStream.write(buffer, 0, read);
-                            if (inputStream.available() < 1) {
-                                outputStream.flush();
-                            }
-                        }
-                    } while (read >= 0);*/
-                } //catch (InterruptedException e) {}
+                } catch (InterruptedException e) {}
 
                 finally {
                     if (!outputSocket.isOutputShutdown()) {
+                        lock.lock();
                         outputSocket.shutdownOutput();
                     }
                 }
