@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -110,8 +111,7 @@ class SSLServer extends Thread {
     }
 
     private void forwardDataFromBrowser(Socket inputSocket, Socket outputSocket) {
-        Lock lock = new ReentrantLock();
-        lock.lock();
+        CountDownLatch lock = new CountDownLatch(1);
         
         BlockingQueue local_requests = new LinkedBlockingQueue();
         try {
@@ -145,11 +145,12 @@ class SSLServer extends Thread {
                         }
                     }
                     while(temp!=-1);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
 
+                }
                 finally {
                     if (!outputSocket.isOutputShutdown()) {
-                        lock.lock();
+                        lock.await();
                         System.out.println("closing socket");
                         outputSocket.shutdownOutput();
                     }
@@ -159,7 +160,7 @@ class SSLServer extends Thread {
                     inputSocket.shutdownInput();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             //e.printStackTrace();  // TODO: implement catch
         }
     }

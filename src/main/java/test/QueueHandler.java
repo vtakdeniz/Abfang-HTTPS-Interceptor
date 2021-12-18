@@ -56,8 +56,7 @@ public class QueueHandler extends Thread{
                        }
                    }
                    else{
-                       System.out.println("unlocking lock");
-                       request_wrapper.lock.unlock();
+                       request_wrapper.lock.countDown();
                    }
                }
                else{
