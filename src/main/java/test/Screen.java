@@ -113,7 +113,7 @@ public class Screen extends Thread{
                 else {
                     isEditParamCorrect=true;
                     System.out.print("Editing header : \n"+(String)header);
-                    System.out.println("Enter the new value of the header ");
+                    System.out.println("\nEnter the new value of the header ");
                     Scanner header_input = new Scanner(System.in);
                     String header_value =header_input.nextLine();
                     request_wrapper.parser.setHeader((String)header,header_value);

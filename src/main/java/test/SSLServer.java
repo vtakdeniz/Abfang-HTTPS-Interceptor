@@ -149,6 +149,7 @@ class SSLServer extends Thread {
 
                 }
                 finally {
+                    //TODO : close socket if  browser  tab is closed
                     if (!outputSocket.isOutputShutdown()) {
                         lock.await();
                         System.out.println("closing socket");
