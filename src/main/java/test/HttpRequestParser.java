@@ -115,6 +115,7 @@ public class HttpRequestParser {
         _messageBody.append(bodyLine).append("\r\n");
     }
 
+
     public boolean isHeaderAvailable(String header){
         return  _requestHeaders.containsKey(header);
     }

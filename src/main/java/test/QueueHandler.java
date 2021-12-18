@@ -1,10 +1,5 @@
 package main.java.test;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -16,8 +11,12 @@ public class QueueHandler extends Thread{
     public void run() {
         Thread listenBrowserThread = new Thread(() -> listenBrowserRequests());
         listenBrowserThread.start();
+
         Thread sendToScreenThread = new Thread(() -> sendToScreen());
         sendToScreenThread.start();
+        Thread listenWritables =new Thread(()-> listenWritable());
+        listenWritables.start();
+
     }
 
     public QueueHandler(){
@@ -25,44 +24,50 @@ public class QueueHandler extends Thread{
 
     private void sendToScreen(){
         try {
-            while(true) {
+            while (true){
                 var request_wrapper=(RequestWrapper)screen_requests.take();
-                var request = request_wrapper.parser.getRequest();
-                System.out.println(request);
-                System.out.println("Enter '$' to forward request, or '!' to drop it");
-                Scanner in = new Scanner(System.in);
-                String s =in.nextLine();
-                if(s.equals("$")){
-                    System.out.println("writing to socket");
-                    System.out.println("socket type : "+request_wrapper.targer_socket);
-                    if(!request_wrapper.socket.isOutputShutdown()){
-
-                        request_wrapper.targer_socket.write(request);
-                        request_wrapper.targer_socket.flush();
-                        if(request_wrapper.local_requests.size()>0){
-                            request_wrapper.local_requests.poll();
-                        }
-                        else{
-                            request_wrapper.lock.unlock();
-                        }
-                    }
-                    else{
-                        System.out.println("Request couldn't be forwarded : ");
-                        System.out.println(request);
-                    }
-                }
-                else{
-                    request_wrapper.local_requests.poll();
-                    System.out.println("Request dropped");
+                boolean isSuccessful=Screen.sendToScreen(request_wrapper);
+                if(!isSuccessful){
+                    //TODO : Add custom exception
+                    System.out.println("\nCAN'T INSERT\nQUEUE IS FULL");
                 }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
+    private void listenWritable(){
+        try{
+           while(true){
+               var request_wrapper=(RequestWrapper)RequestQueue.writable.take();
+               var request=request_wrapper.parser.getRequest();
+               if(!request_wrapper.socket.isOutputShutdown()){
+                   request_wrapper.targer_socket.write(request);
+                   request_wrapper.targer_socket.flush();
+                   if(request_wrapper.local_requests.size()>0){
+                       Object isComplete = request_wrapper.local_requests.poll();
+                       if(isComplete==null){
+                           throw new Exception("CANNOT CLOSE SOCKET AFTER FORWARD\n" +
+                                   "Local request of the wrapper queue returned null\n+" +
+                                   "Socket : "+request_wrapper.socket+"\n"+
+                                   "HOST : "+request_wrapper.parser.getHeader("HOST"));
+                       }
+                   }
+                   else{
+                       request_wrapper.lock.unlock();
+                   }
+               }
+               else{
+                   throw new Exception("CANNOT FORWARD REQUEST : \n" +
+                           request);
+               }
+           }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     private void listenBrowserRequests()  {
 

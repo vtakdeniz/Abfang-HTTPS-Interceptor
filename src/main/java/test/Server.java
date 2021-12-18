@@ -23,12 +23,12 @@ public class Server extends Thread {
     @Override
     public void run() {
         /**
-         * TODO  : SERVER class works as initiator for new. Will fix it later.
+         * TODO  : SERVER class works as initiator for now. Fix it later.
          */
         QueueHandler queueHandler = new QueueHandler();
         queueHandler.start();
-        //Screen screen = new Screen(ScreenType.STANDARD_OUTPUT);
-
+        Screen screen = new Screen(ScreenType.STANDARD_OUTPUT);
+        screen.start();
         ///////////////////// Initiation Done
 
         try (ServerSocket serverSocket = new ServerSocket(9090)) {
