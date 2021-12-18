@@ -29,10 +29,10 @@ public class QueueHandler extends Thread{
                 var request_wrapper=(RequestWrapper)screen_requests.take();
                 var request = request_wrapper.parser.getRequest();
                 System.out.println(request);
-                //System.out.println("Enter '$' to forward request, or '!' to drop it");
-                //Scanner in = new Scanner(System.in);
-                String s =""; //in.nextLine();
-                if(true||s.equals("$")){
+                System.out.println("Enter '$' to forward request, or '!' to drop it");
+                Scanner in = new Scanner(System.in);
+                String s =in.nextLine();
+                if(s.equals("$")){
                     System.out.println("writing to socket");
                     System.out.println("socket type : "+request_wrapper.targer_socket);
                     if(!request_wrapper.socket.isOutputShutdown()){
