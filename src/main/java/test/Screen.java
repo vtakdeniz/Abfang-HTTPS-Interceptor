@@ -1,6 +1,5 @@
 package main.java.test;
 
-import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -38,7 +37,7 @@ public class Screen extends Thread{
     public static boolean sendToScreen(RequestWrapper wrapper){
         boolean isSuccessful=false;
         try {
-            isSuccessful=screen_requests.offer(wrapper, 1000,TimeUnit.MILLISECONDS);
+            isSuccessful=screen_requests.offer(wrapper, 10000,TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -70,7 +69,7 @@ public class Screen extends Thread{
             String command =in.nextLine();
             if(command.equals("f")){
                 isCommandCorrect=true;
-                RequestQueue.writable.offer(request_wrapper,1000,TimeUnit.MILLISECONDS);
+                RequestQueue.forwardable.offer(request_wrapper,10000,TimeUnit.MILLISECONDS);
             }
             else if(command.equals("d")){
                 System.out.println("REQUEST DROPPED");
@@ -113,12 +112,14 @@ public class Screen extends Thread{
                 }
                 else {
                     isEditParamCorrect=true;
-                    System.out.print("Editing header : "+(String)header);
+                    System.out.print("Editing header : \n"+(String)header);
                     System.out.println("Enter the new value of the header ");
                     Scanner header_input = new Scanner(System.in);
                     String header_value =header_input.nextLine();
                     request_wrapper.parser.setHeader((String)header,header_value);
-                    RequestQueue.writable.offer(request_wrapper,1000,TimeUnit.MILLISECONDS);
+                    System.out.println("Sending : \n");
+                    System.out.println(request_wrapper.parser.getRequest());
+                    RequestQueue.forwardable.offer(request_wrapper,10000,TimeUnit.MILLISECONDS);
                 }
             }
         }

@@ -109,9 +109,10 @@ class SSLServer extends Thread {
         }
     }
 
-    private static void forwardDataFromBrowser(Socket inputSocket, Socket outputSocket) {
+    private void forwardDataFromBrowser(Socket inputSocket, Socket outputSocket) {
         Lock lock = new ReentrantLock();
         lock.lock();
+        
         BlockingQueue local_requests = new LinkedBlockingQueue();
         try {
 
@@ -149,6 +150,7 @@ class SSLServer extends Thread {
                 finally {
                     if (!outputSocket.isOutputShutdown()) {
                         lock.lock();
+                        System.out.println("closing socket");
                         outputSocket.shutdownOutput();
                     }
                 }

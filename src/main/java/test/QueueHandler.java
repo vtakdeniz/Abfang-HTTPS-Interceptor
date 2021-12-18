@@ -14,7 +14,8 @@ public class QueueHandler extends Thread{
 
         Thread sendToScreenThread = new Thread(() -> sendToScreen());
         sendToScreenThread.start();
-        Thread listenWritables =new Thread(()-> listenWritable());
+
+        Thread listenWritables =new Thread(()-> listenForwardable());
         listenWritables.start();
 
     }
@@ -37,10 +38,10 @@ public class QueueHandler extends Thread{
         }
     }
 
-    private void listenWritable(){
+    private void listenForwardable(){
         try{
            while(true){
-               var request_wrapper=(RequestWrapper)RequestQueue.writable.take();
+               var request_wrapper=(RequestWrapper)RequestQueue.forwardable.take();
                var request=request_wrapper.parser.getRequest();
                if(!request_wrapper.socket.isOutputShutdown()){
                    request_wrapper.targer_socket.write(request);
@@ -55,6 +56,7 @@ public class QueueHandler extends Thread{
                        }
                    }
                    else{
+                       System.out.println("unlocking lock");
                        request_wrapper.lock.unlock();
                    }
                }
