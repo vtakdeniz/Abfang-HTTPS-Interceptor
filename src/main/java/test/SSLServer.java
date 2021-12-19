@@ -4,7 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
+import java.security.*;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -15,10 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import javax.net.ssl.*;
 import javax.swing.plaf.synth.SynthLookAndFeel;
@@ -27,10 +23,11 @@ import org.brotli.dec.BrotliInputStream;
 
 class SSLServer extends Thread {
     String protocol = "TLS";
-    String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/ssl_cert#2/youtube.keystore";
-    char[] storepass = "fener0306".toCharArray();
-    char[] keypass = "fener0306".toCharArray();
-    String alias = "alias";
+    //String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/ssl_cert#2/youtube.keystore";
+    String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.keystore";
+    char[] storepass = "password".toCharArray();
+    char[] keypass = "password".toCharArray();
+    String alias = "testxx";
     static int PORT_NUM=9200;
     /*Socket browser_socket;
     SSLSocket target_socket;
@@ -49,6 +46,15 @@ class SSLServer extends Thread {
     public void run(){
 
         try{
+            //////////
+            /*KeyStore ks = KeyStore.getInstance("JKS");
+            InputStream readStream = new FileInputStream("/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.jks");
+            ks.load(readStream, "password".toCharArray());
+            Key key = ks.getKey("keyAlias", "password".toCharArray());
+            readStream.close();
+            System.out.println(key.getAlgorithm());*/
+            //////////
+
             FileInputStream fIn = new FileInputStream(keystoreFilenameBase);
             KeyStore keystore = KeyStore.getInstance("JKS");
             keystore.load(fIn, storepass);

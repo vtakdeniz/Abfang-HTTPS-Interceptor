@@ -17,5 +17,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="org.bouncycastle:bcmail-jdk14:1.51" level="project" />
   </component>
 </module>

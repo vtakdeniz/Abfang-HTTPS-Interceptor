@@ -81,6 +81,9 @@ public class Screen extends Thread{
                             "Socket : "+request_wrapper.socket+"\n"+
                             "HOST : "+request_wrapper.parser.getHeader("HOST"));
                 }
+                if(request_wrapper.local_requests.size()<=0){
+                    request_wrapper.lock.countDown();
+                }
             }
             else if(command.equals("e")){
                 isCommandCorrect=true;
@@ -113,7 +116,7 @@ public class Screen extends Thread{
                 else {
                     isEditParamCorrect=true;
                     System.out.print("Editing header : \n"+(String)header);
-                    System.out.println("\nEnter the new value of the header ");
+                    System.out.println("\n    ::   Enter the new value of the header ");
                     Scanner header_input = new Scanner(System.in);
                     String header_value =header_input.nextLine();
                     request_wrapper.parser.setHeader((String)header,header_value);
