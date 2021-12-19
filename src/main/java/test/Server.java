@@ -72,16 +72,12 @@ public class Server extends Thread {
 
                     final Socket forwardSocket;
                     try {
-                        // DEBUG
-                        if (matcher.group(1).equals("www.youtube.com")){
                             ssl_server_port++;
-                            new SSLServer(ssl_server_port).start();
-                            Thread.sleep(500);
+                            new SSLServer(ssl_server_port,matcher.group(1)).start();
+                            Thread.sleep(700);
                             forwardSocket = new Socket("127.0.0.1", ssl_server_port);
-                        }
-                        else {
-                            forwardSocket = new Socket(matcher.group(1), Integer.parseInt(matcher.group(2)));
-                        }
+                         //forwardSocket = new Socket(matcher.group(1), Integer.parseInt(matcher.group(2)));
+
                     } catch (IOException| InterruptedException | NumberFormatException e) {
                         //e.printStackTrace();  // TODO: implement catch
                         outputStreamWriter.write("HTTP/" + matcher.group(3) + " 502 Bad Gateway\r\n");

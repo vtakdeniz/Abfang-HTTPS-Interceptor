@@ -8,7 +8,6 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.io.pem.PemWriter;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -18,7 +17,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Date;
 
 // To create a certificate chain we need the issuers' certificate and private key. Keep these together to pass around
@@ -43,7 +41,7 @@ public class certgenerator{
      * @param isCA   Can this certificate be used to sign other certificates
      * @return Newly created certificate with its private key
      */
-    private static GeneratedCert createCertificate(String cnName, String domain, GeneratedCert issuer, boolean isCA) throws Exception {
+    protected static GeneratedCert createCertificate(String cnName, String domain, GeneratedCert issuer, boolean isCA) throws Exception {
         // Generate the key-pair with the official Java API's
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair certKeyPair = keyGen.generateKeyPair();
@@ -126,7 +124,7 @@ public class certgenerator{
 
     }
 
-    static void exportKeyPairToKeystoreFile(KeyPair keyPair,Certificate caCert, Certificate certificate, String alias, String storePass) throws Exception {
+    protected static void exportKeyPairToKeystoreFile(KeyPair keyPair,Certificate caCert, Certificate certificate, String alias, String storePass) throws Exception {
         char[] pwdArray = "password".toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("newKeyStoreFileName.keystore"), pwdArray);
@@ -150,7 +148,7 @@ public class certgenerator{
         System.out.println(Base64.encode(key.getEncoded()));
     }
 
-    static void writeCertToFileBase64Encoded(Certificate certificate, String fileName) throws Exception {
+    protected static void writeCertToFileBase64Encoded(Certificate certificate, String fileName) throws Exception {
         FileOutputStream certificateOut = new FileOutputStream(fileName);
         certificateOut.write("-----BEGIN CERTIFICATE-----\n".getBytes());
         certificateOut.write(Base64.encode(certificate.getEncoded()));
@@ -158,7 +156,7 @@ public class certgenerator{
         certificateOut.close();
     }
 
-    static void writePrivateKey(PrivateKey privateKey, String fileName) throws Exception {
+    /*protected static void writePrivateKey(PrivateKey privateKey, String fileName) throws Exception {
         FileOutputStream certificateOut = new FileOutputStream(fileName);
 
         byte[] key = Base64.encode(privateKey.getEncoded());
@@ -174,7 +172,7 @@ public class certgenerator{
         certificateOut.write("\n".getBytes());
         certificateOut.write("-----END PRIVATE KEY-----\n".getBytes());
         certificateOut.close();
-    }
+    }*/
 
 
 }

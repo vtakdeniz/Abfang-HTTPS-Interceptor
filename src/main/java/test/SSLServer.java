@@ -27,14 +27,13 @@ class SSLServer extends Thread {
     String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.keystore";
     char[] storepass = "password".toCharArray();
     char[] keypass = "password".toCharArray();
-    String alias = "testxx";
-    static int PORT_NUM=9200;
+    int PORT_NUM;
     /*Socket browser_socket;
     SSLSocket target_socket;
     PrintWriter browser_socket_output;
     PrintWriter target_socket_output;
     */
-    public SSLServer(int port){
+    public SSLServer(int port,String domain_name){
         this.PORT_NUM=port;
     }
 
@@ -68,11 +67,12 @@ class SSLServer extends Thread {
             SSLContext ctx = SSLContext.getInstance(protocol);
             ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
             SSLServerSocketFactory factory = ctx.getServerSocketFactory();
-            ServerSocket listener = factory.createServerSocket(SSLServer.PORT_NUM);
+            ServerSocket listener = factory.createServerSocket(this.PORT_NUM);
             SSLServerSocket sslListener = (SSLServerSocket) listener;
 
             sslListener.setNeedClientAuth(false);
             sslListener.setEnabledProtocols(new String[] {"TLSv1.2"});
+
             // NIO to be implemented
             while (true) {
                 try (Socket browser_socket = sslListener.accept()) {
