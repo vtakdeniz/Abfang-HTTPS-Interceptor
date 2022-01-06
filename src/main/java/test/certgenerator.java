@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-// To create a certificate chain we need the issuers' certificate and private key. Keep these together to pass around
 class GeneratedCert {
     public final PrivateKey privateKey;
     public final X509Certificate certificate;
@@ -31,27 +30,15 @@ class GeneratedCert {
 }
 
 public class certgenerator{
-    private static final String BC_PROVIDER = "BC";
-    private static final String KEY_ALGORITHM = "RSA";
-    private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
-    /**
-     * @param cnName The CN={name} of the certificate. When the certificate is for a domain it should be the domain name
-     * @param domain Nullable. The DNS domain for the certificate.
-     * @param issuer Issuer who signs this certificate. Null for a self-signed certificate
-     * @param isCA   Can this certificate be used to sign other certificates
-     * @return Newly created certificate with its private key
-     */
+
     protected static GeneratedCert createCertificate(String cnName, String domain, GeneratedCert issuer, boolean isCA) throws Exception {
-        // Generate the key-pair with the official Java API's
+
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair certKeyPair = keyGen.generateKeyPair();
         X500Name name = new X500Name("CN=" + cnName);
-        // If you issue more than just test certificates, you might want a decent serial number schema ^.^
         BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
         Instant validFrom = Instant.now();
         Instant validUntil = validFrom.plus(10 * 360, ChronoUnit.DAYS);
-
-        // If there is no issuer, we self-sign our certificate.
 
         X500Name issuerName;
         PrivateKey issuerKey;
@@ -64,24 +51,20 @@ public class certgenerator{
         }
 
 
-        // The cert builder to build up our certificate information
         JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
                 issuerName,
                 serialNumber,
                 Date.from(validFrom), Date.from(validUntil),
                 name, certKeyPair.getPublic());
 
-        // Make the cert to a Cert Authority to sign more certs when needed
         if (isCA) {
             builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
         }
-        // Modern browsers demand the DNS name entry
         if (domain != null) {
             builder.addExtension(Extension.subjectAlternativeName, false,
                     new GeneralNames(new GeneralName(GeneralName.dNSName, domain)));
         }
 
-        // Finally, sign the certificate:
         ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(issuerKey);
         X509CertificateHolder certHolder = builder.build(signer);
         X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);

@@ -21,6 +21,7 @@ public class QueueHandler extends Thread{
     }
 
     public QueueHandler(){
+
     }
 
     private void sendToScreen(){
