@@ -17,22 +17,18 @@ public class HttpRequestParser {
 
     public void parseRequest(String request) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(request));
-
         setRequestLine(reader.readLine());
         String header = reader.readLine();
         while (header.length() > 0) {
             appendHeaderParameter(header);
             header = reader.readLine();
         }
-
         String bodyLine = reader.readLine();
         while (bodyLine != null) {
             appendMessageBody(bodyLine);
             bodyLine = reader.readLine();
         }
-
     }
-
     public String getRequestLine() {
         return _requestLine;
     }

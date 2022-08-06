@@ -30,9 +30,6 @@ class GeneratedCert implements Serializable{
     }
 
 }
-
-
-
 public class certGenerator {
 
     protected static X509Certificate readRootCert(String path){
@@ -48,8 +45,6 @@ public class certGenerator {
         } catch (FileNotFoundException | CertificateException e) {
             e.printStackTrace();
         }
-
-        //GeneratedCert gen_cert= new GeneratedCert(,cer);
         return cer;
     }
 
@@ -73,17 +68,13 @@ public class certGenerator {
             issuerKey = issuer.privateKey;
         }
 
-
         JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
                 issuerName,
                 serialNumber,
                 Date.from(validFrom), Date.from(validUntil),
                 name, certKeyPair.getPublic());
-
         if (isCA) {
             builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
-
-
         }
         if (domain != null) {
             builder.addExtension(Extension.subjectAlternativeName, false,
@@ -93,7 +84,6 @@ public class certGenerator {
         ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(issuerKey);
         X509CertificateHolder certHolder = builder.build(signer);
         X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);
-
         GeneratedCert generatedCert = new GeneratedCert(certKeyPair.getPrivate(), cert);
 
         if(isCA){
@@ -101,15 +91,10 @@ public class certGenerator {
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(generatedCert);
         }
-
         return generatedCert;
     }
 
     public static void main(String[] args) {
-
-        //X509Certificate root = readRootCert("/Users/veliakdeniz/Desktop/Interceptor/root.crt");
-        //System.out.println(root);
-
         try {
             KeyStore ks = KeyStore.getInstance("JKS");
             char[] pwdArray = "password".toCharArray();
@@ -117,30 +102,20 @@ public class certGenerator {
             try (FileOutputStream fos = new FileOutputStream("www.youtube.com"+".keystore")) {
                 ks.store(fos, pwdArray);
             }
-        } catch (IOException |CertificateException |NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
+        } catch (IOException | CertificateException |
+                NoSuchAlgorithmException | KeyStoreException e) {
             e.printStackTrace();
         }
         GeneratedCert rootCA = null;
         try {
-
             rootCA = createCertificate("interceptor",   /*domain=*/null,     /*issuer=*/null,  /*isCa=*/true);
-
             FileInputStream fos = new FileInputStream("rootCert.data");
             ObjectInputStream ois = new ObjectInputStream(fos);
             GeneratedCert rootCAFromfile=(GeneratedCert) ois.readObject();
-            //GeneratedCert issuer = createCertificate("www.youtube.com", /*domain=*/null,     rootCA,           /*isCa=*/true);
             GeneratedCert domain = createCertificate("www.youtube.com",              "www.youtube.com", rootCAFromfile,           /*isCa=*/false);
-           // GeneratedCert otherD = createCertificate("other.gamlor.info",              "other.gamlor.info", issuer,           /*isCa=*/false);
-
             writeCertToFileBase64Encoded(rootCA.certificate,"root.crt");
-            //writePrivateKey(rootCA.privateKey,"root.key");
-
             writeCertToFileBase64Encoded(domain.certificate,"www.youtube.com.crt");
-            //writePrivateKey(issuer.privateKey,"www.youtube.com.key");
             KeyPair cert = new KeyPair(domain.certificate.getPublicKey(),domain.privateKey);
-
             exportKeyPairToKeystoreFile(cert,rootCA.certificate ,domain.certificate, "testxx","password.","www.youtube.com");
         }
         catch (Exception e) {
@@ -156,21 +131,15 @@ public class certGenerator {
         Certificate[] chain = new Certificate[2];
         chain[0] = certificate;
         chain[1] = caCert;
-        //KeyStore sslKeyStore = KeyStore.getInstance("JKS");
-        //sslKeyStore.load(null, null);
         ks.setKeyEntry(alias, keyPair.getPrivate(),pwdArray, chain);
         OutputStream writeStream = new FileOutputStream(keyStoreName+".keystore");
         ks.store(writeStream, "password".toCharArray());
         writeStream.close();
-        //FileOutputStream keyStoreOs = new FileOutputStream(fileName);
-        //ks.store(keyStoreOs, storePass.toCharArray());
-
         KeyStore ks2 = KeyStore.getInstance("JKS");
         InputStream readStream = new FileInputStream(keyStoreName+".keystore");
         ks2.load(readStream, "password".toCharArray());
         Key key = ks2.getKey("testxx", "password".toCharArray());
         readStream.close();
-        System.out.println(Base64.encode(key.getEncoded()));
     }
 
     protected static void writeCertToFileBase64Encoded(Certificate certificate, String fileName) throws Exception {
@@ -180,25 +149,5 @@ public class certGenerator {
         certificateOut.write("\n-----END CERTIFICATE-----\n".getBytes());
         certificateOut.close();
     }
-
-    /*protected static void writePrivateKey(PrivateKey privateKey, String fileName) throws Exception {
-        FileOutputStream certificateOut = new FileOutputStream(fileName);
-
-        byte[] key = Base64.encode(privateKey.getEncoded());
-        System.out.println(key.length);
-        certificateOut.write("-----BEGIN PRIVATE KEY-----\n".getBytes());
-
-        for(int i=0;i<25;i++){
-            System.out.println(i*64+" : "+(i*64+64));
-            certificateOut.write(Arrays.copyOfRange(key,i*64,i*64+64));
-            certificateOut.write("\n".getBytes());
-        }
-        certificateOut.write(Arrays.copyOfRange(key,1600,1624));
-        certificateOut.write("\n".getBytes());
-        certificateOut.write("-----END PRIVATE KEY-----\n".getBytes());
-        certificateOut.close();
-    }*/
-
-
 }
 

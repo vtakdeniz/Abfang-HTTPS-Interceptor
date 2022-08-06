@@ -23,7 +23,6 @@ public class QueueHandler extends Thread{
     }
 
     public QueueHandler(){
-
     }
 
     private void sendToScreen(){
@@ -74,7 +73,6 @@ public class QueueHandler extends Thread{
     }
 
     private void listenBrowserRequests()  {
-
             try {
                 while(true) {
                 var request= RequestQueue.browserToServer.take();
@@ -83,7 +81,6 @@ public class QueueHandler extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
     }
 
     private void listenServerRequests()  {
@@ -96,5 +93,4 @@ public class QueueHandler extends Thread{
                 e.printStackTrace();
             }
     }
-
 }

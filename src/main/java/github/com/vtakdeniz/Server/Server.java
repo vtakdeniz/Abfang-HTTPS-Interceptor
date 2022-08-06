@@ -31,7 +31,6 @@ public class Server extends Thread {
         queueHandler.start();
         Screen screen = new Screen(ScreenType.STANDARD_OUTPUT);
         screen.start();
-        ///////////////////// Initiation Done
 
         try (ServerSocket serverSocket = new ServerSocket(9090)) {
             Socket socket;
@@ -40,10 +39,10 @@ public class Server extends Thread {
                     (new Handler(socket)).start();
                 }
             } catch (IOException e) {
-                //e.printStackTrace();  // TODO: implement catch
+                e.printStackTrace();  // TODO: implement catch
             }
         } catch (IOException e) {
-            //e.printStackTrace();  // TODO: implement catch
+            e.printStackTrace();  // TODO: implement catch
             return;
         }
     }
@@ -166,7 +165,7 @@ public class Server extends Thread {
                     }
                 }
             } catch (IOException e) {
-                //e.printStackTrace();  // TODO: implement catch
+                e.printStackTrace();  // TODO: implement catch
             }
         }
 

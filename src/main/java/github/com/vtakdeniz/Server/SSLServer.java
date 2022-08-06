@@ -16,37 +16,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class SSLServer extends Thread {
     String protocol = "TLS";
-    //String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/ssl_cert#2/youtube.keystore";
     String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.keystore";
     char[] storepass = "password".toCharArray();
     char[] keypass = "password".toCharArray();
     int PORT_NUM;
-    /*Socket browser_socket;
-    SSLSocket target_socket;
-    PrintWriter browser_socket_output;
-    PrintWriter target_socket_output;
-    */
     public SSLServer(int port,String domain_name){
         this.PORT_NUM=port;
     }
-
-   /* public static void main(String[] args) {
-        (new SSLServer()).start();
-    }*/
-
     @Override
     public void run(){
-
         try{
-            //////////
-            /*KeyStore ks = KeyStore.getInstance("JKS");
-            InputStream readStream = new FileInputStream("/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.jks");
-            ks.load(readStream, "password".toCharArray());
-            Key key = ks.getKey("keyAlias", "password".toCharArray());
-            readStream.close();
-            System.out.println(key.getAlgorithm());*/
-            //////////
-
             FileInputStream fIn = new FileInputStream(keystoreFilenameBase);
             KeyStore keystore = KeyStore.getInstance("JKS");
             keystore.load(fIn, storepass);
@@ -65,8 +44,7 @@ class SSLServer extends Thread {
 
             sslListener.setNeedClientAuth(false);
             sslListener.setEnabledProtocols(new String[] {"TLSv1.2"});
-
-            // NIO to be implemented
+            // TODO :NIO to be implemented
             while (true) {
                 try (Socket browser_socket = sslListener.accept()) {
                     SSLSocketFactory ssl_client_socket_factory =
@@ -75,37 +53,20 @@ class SSLServer extends Thread {
                             (SSLSocket)ssl_client_socket_factory.createSocket("www.youtube.com", 443);
 
                     ssl_socket.startHandshake();
-
-                    //this.browser_socket_output = new PrintWriter(this.browser_socket.getOutputStream(),false, Charset.forName("ISO-8859-1"));
-
-                    //this.target_socket_output = new PrintWriter(this.target_socket.getOutputStream(),false, Charset.forName("ISO-8859-1"));
-
-
                     Thread browser_listener = new Thread(()->forwardDataFromBrowser(browser_socket,ssl_socket));
                     browser_listener.start();
                     Thread target_listener_thread = new Thread(()->forwardData(ssl_socket,browser_socket));
                     target_listener_thread.start();
-
                     target_listener_thread.join();
-                    /*PrintWriter out = new PrintWriter(browser_socket.getOutputStream(), false);
-                    out.print("Hello World!\n");
-                    out.print("Hello World!\n");
-                    out.flush();*/
 
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
-
-
-        } catch (FileNotFoundException | KeyManagementException | NoSuchAlgorithmException | CertificateException e) {
-            //e.printStackTrace();
-        } catch (KeyStoreException e) {
-            //e.printStackTrace();
-        } catch (UnrecoverableKeyException e) {
-            //e.printStackTrace();
-        } catch (IOException e) {
-            //e.printStackTrace();
+        } catch (KeyManagementException | NoSuchAlgorithmException |
+                CertificateException | KeyStoreException |
+                UnrecoverableKeyException | IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -114,7 +75,6 @@ class SSLServer extends Thread {
         
         BlockingQueue local_requests = new LinkedBlockingQueue();
         try {
-
             BufferedReader inputStream = new BufferedReader(
                     new InputStreamReader(
                             inputSocket.getInputStream()));
@@ -138,8 +98,6 @@ class SSLServer extends Thread {
                                 //TODO Implement exception
 
                             }
-                            /*outputStream.write(line.toString());
-                            outputStream.flush();*/
                             line.delete(0,line.length());
                         }
                     }
@@ -161,7 +119,7 @@ class SSLServer extends Thread {
                 }
             }
         } catch (IOException | InterruptedException e) {
-            //e.printStackTrace();  // TODO: implement catch
+            e.printStackTrace();  // TODO: implement catch
         }
     }
 
@@ -194,7 +152,7 @@ class SSLServer extends Thread {
                 }
             }
         } catch (IOException e) {
-           // e.printStackTrace();  // TODO: implement catch
+            e.printStackTrace();  // TODO: implement catch
         }
     }
 
@@ -210,12 +168,9 @@ class SSLServer extends Thread {
                     do {
                         read = inputStream.read(buffer);
                         if (read > 0) {
-                            //new BufferedReader(new InputStreamReader(new BrotliInputStream(new ByteArrayInputStream(buffer))));
-                            //System.out.println("[+] Server sending : "+new String(buffer).replaceAll("\r\n","*r*n\n"));
                             outputStream.write(buffer, 0, read);
                             if (inputStream.available() < 1) {
                                 outputStream.flush();
-                                //System.out.println("********-------------*******");
                             }
                         }
                     } while (read >= 0);
@@ -230,7 +185,7 @@ class SSLServer extends Thread {
                 }
             }
         } catch (IOException e) {
-            //e.printStackTrace();  // TODO: implement catch
+            e.printStackTrace();  // TODO: implement catch
         }
     }
 
@@ -246,13 +201,10 @@ class SSLServer extends Thread {
                     do {
                         read = inputStream.read(buffer);
                         if (read > 0) {
-                            //new BufferedReader(new InputStreamReader(new BrotliInputStream(new ByteArrayInputStream(buffer))));
-                            //System.out.println("[+] Browser sending : "+new String(buffer).replaceAll("\r\n","*r*n\n"));
                             outputStream.write(buffer, 0, read);
                             if (inputStream.available() < 1) {
 
                                 outputStream.flush();
-                                //System.out.println("********-------------*******");
                             }
                         }
                     } while (read >= 0);
@@ -267,63 +219,7 @@ class SSLServer extends Thread {
                 }
             }
         } catch (IOException e) {
-           // e.printStackTrace();  // TODO: implement catch
+           e.printStackTrace();  // TODO: implement catch
         }
     }
-
-    /*public void listen_target_socket(SSLSocket target_socket)  {
-        String temp;
-        String inputLine;
-        BufferedReader in = null;
-
-        System.out.println("target socket is closed  "+this.target_socket.isClosed()+" ");
-        System.out.println("target socket is input  "+this.target_socket.isInputShutdown()+" ");
-        System.out.println("target socket is output  "+this.target_socket.isOutputShutdown()+" ");
-
-        try {
-            in = new BufferedReader(
-                    new InputStreamReader(
-                            target_socket.getInputStream()));
-
-            while ((inputLine = in.readLine())!=null){
-                temp = inputLine;
-                browser_socket_output.write(temp);
-                System.out.println(temp.replaceAll("\r",""));
-                if(!in.ready()){browser_socket_output.flush();continue;}
-            }
-            browser_socket_output.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    /*public void listen_browser_socket(Socket browser_socket){
-        String temp;
-        String inputLine;
-        BufferedReader in = null;
-
-        System.out.println("browser socket is closed  "+this.browser_socket.isClosed()+" ");
-        System.out.println("browser socket is input  "+this.browser_socket.isInputShutdown()+" ");
-        System.out.println("browser socket is output  "+this.browser_socket.isOutputShutdown()+" ");
-        try {
-
-            in = new BufferedReader(
-                    new InputStreamReader(
-                            browser_socket.getInputStream()));
-
-            while ((inputLine = in.readLine())!=null){
-
-                temp = inputLine;
-                target_socket_output.write(temp);
-                System.out.println(temp.replaceAll("\r",""));
-                if(!in.ready()){target_socket_output.flush();continue;}
-            }
-            target_socket_output.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
 }

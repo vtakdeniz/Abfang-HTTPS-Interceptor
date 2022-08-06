@@ -28,16 +28,10 @@ public class certificateManager {
         GeneratedCert rootCA = null;
         try {
             rootCA = generator.createCertificate("interceptor",   /*domain=*/null,     /*issuer=*/null,  /*isCa=*/true);
-
             GeneratedCert domain = generator.createCertificate("www.youtube.com","www.youtube.com", rootCA,/*isCa=*/false);
-
             generator.writeCertToFileBase64Encoded(rootCA.certificate,"root.crt");
-            //writePrivateKey(rootCA.privateKey,"root.key");
-
             generator.writeCertToFileBase64Encoded(domain.certificate,"www.youtube.com.crt");
-            //writePrivateKey(issuer.privateKey,"www.youtube.com.key");
             KeyPair cert = new KeyPair(domain.certificate.getPublicKey(),domain.privateKey);
-
             generator.exportKeyPairToKeystoreFile(cert,rootCA.certificate ,domain.certificate, "testxx","password.","www.youtube.com");
         }
         catch (Exception e) {

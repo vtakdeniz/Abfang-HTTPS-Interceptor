@@ -81,11 +81,8 @@ public class Screen extends Thread{
             else{
                 System.out.println("Wrong Input");
             }
-
         }
-
     }
-
     public static void editCommand(RequestWrapper request_wrapper) throws InterruptedException {
         System.out.println("Press 'b' to edit request body or " +
                 "type the name of the header that will be edited");
