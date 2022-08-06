@@ -6,6 +6,7 @@ import github.com.vtakdeniz.RequestUtil.QueueHandler;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import github.com.vtakdeniz.IO.ScreenType;
@@ -16,7 +17,7 @@ public class Server extends Thread {
         (new Server()).start();
     }
 
-    public static int ssl_server_port = 9095;
+    public static AtomicInteger ssl_server_port = new AtomicInteger(9095);
 
     public Server() {
         super("Server Thread");
@@ -73,18 +74,18 @@ public class Server extends Thread {
 
                     final Socket forwardSocket;
                     try {
-                            ssl_server_port++;
+                            ssl_server_port.getAndIncrement();
                             new SSLServer(ssl_server_port,matcher.group(1)).start();
                             Thread.sleep(700);
-                            forwardSocket = new Socket("127.0.0.1", ssl_server_port);
+                            forwardSocket = new Socket("127.0.0.1", ssl_server_port.get());
                          //forwardSocket = new Socket(matcher.group(1), Integer.parseInt(matcher.group(2)));
 
                     } catch (IOException| InterruptedException | NumberFormatException e) {
-                        //e.printStackTrace();  // TODO: implement catch
                         outputStreamWriter.write("HTTP/" + matcher.group(3) + " 502 Bad Gateway\r\n");
                         outputStreamWriter.write("Proxy-agent: Simple/0.1\r\n");
                         outputStreamWriter.write("\r\n");
                         outputStreamWriter.flush();
+                        e.printStackTrace();  // TODO: implement catch
                         return;
                     }
                     try {
@@ -118,7 +119,7 @@ public class Server extends Thread {
                             try {
                                 remoteToClient.join();
                             } catch (InterruptedException e) {
-                                //e.printStackTrace();  // TODO: implement catch
+                                e.printStackTrace();  // TODO: implement catch
                             }
                         }
                     } finally {
@@ -126,12 +127,12 @@ public class Server extends Thread {
                     }
                 }
             } catch (IOException e) {
-                //e.printStackTrace();  // TODO: implement catch
+                e.printStackTrace();  // TODO: implement catch
             } finally {
                 try {
                     clientSocket.close();
                 } catch (IOException e) {
-                    //e.printStackTrace();  // TODO: implement catch
+                    e.printStackTrace();  // TODO: implement catch
                 }
             }
         }

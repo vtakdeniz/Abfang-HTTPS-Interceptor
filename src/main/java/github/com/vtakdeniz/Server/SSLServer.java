@@ -6,6 +6,7 @@ import github.com.vtakdeniz.RequestUtil.RequestWrapper;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.*;
@@ -13,18 +14,20 @@ import java.security.cert.CertificateException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class SSLServer extends Thread {
     String protocol = "TLS";
-    String keystoreFilenameBase = "/Users/veliakdeniz/Desktop/new_interceptor_test/newKeyStoreFileName.keystore";
+
+    String keystoreFilenameBase = String.format("%s/www.youtube.com.keystore",System.getProperty("user.dir"));
     char[] storepass = "password".toCharArray();
     char[] keypass = "password".toCharArray();
-    int PORT_NUM;
-    public SSLServer(int port,String domain_name){
+    AtomicInteger PORT_NUM;
+    public SSLServer(AtomicInteger port, String domain_name){
         this.PORT_NUM=port;
     }
     @Override
-    public void run(){
+    public void run() {
         try{
             FileInputStream fIn = new FileInputStream(keystoreFilenameBase);
             KeyStore keystore = KeyStore.getInstance("JKS");
@@ -39,7 +42,18 @@ class SSLServer extends Thread {
             SSLContext ctx = SSLContext.getInstance(protocol);
             ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
             SSLServerSocketFactory factory = ctx.getServerSocketFactory();
-            ServerSocket listener = factory.createServerSocket(this.PORT_NUM);
+            System.out.println(this.PORT_NUM);
+            ServerSocket listener;
+            while (true){
+                try{
+                    listener = factory.createServerSocket(this.PORT_NUM.get());
+                    break;
+                }
+                catch(BindException e){
+                    this.PORT_NUM.getAndIncrement();
+                    e.printStackTrace();
+                }
+            }
             SSLServerSocket sslListener = (SSLServerSocket) listener;
 
             sslListener.setNeedClientAuth(false);
@@ -106,7 +120,6 @@ class SSLServer extends Thread {
 
                 }
                 finally {
-                    //TODO : close socket if  browser  tab is closed
                     if (!outputSocket.isOutputShutdown()) {
                         lock.await();
                         System.out.println("closing socket");
